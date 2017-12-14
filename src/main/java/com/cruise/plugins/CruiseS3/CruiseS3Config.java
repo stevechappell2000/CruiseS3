@@ -12,8 +12,8 @@ public class CruiseS3Config implements CruiseConfigurationInterface{
 	public boolean initConfig() {
 		if(null == props) {
 			props = new Properties();
-			props.put("accessKey", "AKIAIWWOG4VVUD5XUHRA");
-			props.put("secretKey", "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");
+			props.put("accessKey", "xxxxxxxxxxxx");
+			props.put("secretKey", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 		}
 		return true;
 	}
