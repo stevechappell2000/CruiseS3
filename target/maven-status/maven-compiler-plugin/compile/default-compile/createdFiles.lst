@@ -1,0 +1,4 @@
+com\cruise\plugins\CruiseS3\CruiseS3.class
+com\cruise\plugins\CruiseS3\CruiseS3Buckets.class
+com\cruise\plugins\CruiseS3\CruiseS3Bucket.class
+com\cruise\plugins\CruiseS3\CruiseS3Config.class
