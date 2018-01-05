@@ -101,6 +101,16 @@ public class CruiseS3 implements PluginInterface
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("connectionName","true","MyAWSConnection","The connection must already have been created using this name."));
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("bucketName","true","Yourbucket","Name of the bucket to access"));
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("objectName","true","Yourbucket","This is the actual file/object name to retrieve."));
+
+    	++x;
+    	pmd.getActions().add(new Action("s3DeleteObject", "Deletes an object from an S3 Bucket."));
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("service","true","~UUID","Internal Parameter to track service names. You can override"));
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("connectionName","true","MyAWSConnection","The connection must already have been created using this name."));
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("bucketName","true","Yourbucket","Name of the bucket to access"));
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("objectName","true","Yourbucket","This is the actual file/object name to be removed."));
+
+    
+    
     }
 	@Override
 	public PlugInMetaData getPlugInMetaData() {
@@ -117,7 +127,6 @@ public class CruiseS3 implements PluginInterface
 		boolean ret = false;
 		String action = service.Action().trim().toLowerCase();
 		GenericSessionResp gro = new GenericSessionResp();
-
 		switch (action) {
 		case "cruisetest":
 			gro.addParmeter("PluginEnabled", "true");
@@ -162,7 +171,7 @@ public class CruiseS3 implements PluginInterface
 					ret = true;
 				}
 			} catch (Exception e) {
-				Clog.Error(so, "PlugInInfo", "600008", "Failed to connec:"+e.getMessage());
+				Clog.Error(so, "PlugInInfo", "600008", "Failed to connect."+e.getMessage());
 				e.printStackTrace();
 			}
 			break;
@@ -175,7 +184,7 @@ public class CruiseS3 implements PluginInterface
 					ret = true;
 				}
 			} catch (Exception e) {
-				Clog.Error(so, "PlugInInfo", "600009", "Failed to connec:"+e.getMessage());
+				Clog.Error(so, "PlugInInfo", "600009", "Failed to connect."+e.getMessage());
 				e.printStackTrace();
 			}
 			break;
@@ -188,7 +197,7 @@ public class CruiseS3 implements PluginInterface
 					ret = true;
 				}
 			} catch (Exception e) {
-				Clog.Error(so, "PlugInInfo", "600010", "Failed to connec:"+e.getMessage());
+				Clog.Error(so, "PlugInInfo", "600010", "Failed to connect."+e.getMessage());
 				e.printStackTrace();
 			}
 			break;
@@ -206,7 +215,7 @@ public class CruiseS3 implements PluginInterface
 					}
 				}
 			} catch (Exception e) {
-				Clog.Error(so, "PlugInInfo", "600011", "Failed to connec:"+e.getMessage());
+				Clog.Error(so, "PlugInInfo", "600011", "Failed to connect."+e.getMessage());
 				e.printStackTrace();
 			}
 			break;
@@ -228,7 +237,25 @@ public class CruiseS3 implements PluginInterface
 					}
 				}
 			} catch (Exception e) {
-				Clog.Error(so, "PlugInInfo", "600012", "Failed to connec:"+e.getMessage());
+				Clog.Error(so, "PlugInInfo", "600012", "Failed to connect."+e.getMessage());
+				e.printStackTrace();
+			}
+			break;
+		case "s3deleteobject":
+            try {
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+				if(null != bucket) {
+					if(bucket.deleteObject(service.Parameter("bucketName"),service.Parameter("objectName"))){
+						gro.addParmeter("s3DeleteObject", "Object Removed");
+						so.appendToResponse(service.Service()+"."+service.Action(), gro);
+					}else {
+						gro.addParmeter("s3DeleteObject", "Failed");
+						so.appendToResponse(service.Service()+"."+service.Action(), gro);
+					}
+
+				}
+			} catch (Exception e) {
+				Clog.Error(so, "PlugInInfo", "600014", "Failed to connect."+e.getMessage());
 				e.printStackTrace();
 			}
 			break;
@@ -240,7 +267,13 @@ public class CruiseS3 implements PluginInterface
 			 * Key to supporting this function is to first get whatever connection you need, then get the raw JSON and convert it to an Address object
 			 * You may have to append {"Application":{" to the JSON to get it to parse correctly.
 			 * 
-			 * You will then need to gather the pass-thru parameters (anything prefixed with an *) and add those key values to the new service
+			 * You will then need to gather the pass-thru parameters simply add the parameter with the attached service name as the prefix.
+			 * 
+			 * for example;
+			 * "attach" : "MyService",
+			 * "MyService.value" : "some value to pass",
+			 * "MyService.thisValue" : "some value to pass",
+			 * "MyService.anotherValue3" : "some value to pass",
 			 * 
 			 * 
 			 */
@@ -286,7 +319,7 @@ public class CruiseS3 implements PluginInterface
 									so.getApplication().getServices().add(x, s);
 								}
 							}else {
-								Clog.Error(so, "PlugInInfo", "600012", "CruiseS3 Attach of script "+objecName+" was empty or not found.");
+								Clog.Error(so, "PlugInInfo", "600015", "CruiseS3 Attach of script "+objecName+" was empty or not found.");
 								ret = false;
 							}
 							

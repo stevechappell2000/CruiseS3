@@ -1,5 +1,6 @@
 package com.cruise.plugins.CruiseS3;
 
+import java.io.Console;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -41,6 +42,7 @@ public class CruiseS3Buckets {
         		secretKey = s.Parameter("secretKey");
         	}
         	String region = s.Parameter("region");
+        	System.out.println(accessKey+":"+secretKey+":"+region);
         	ret = new CruiseS3Bucket(accessKey, secretKey, region);
         	bucketCache.put(connName, ret);
         }
