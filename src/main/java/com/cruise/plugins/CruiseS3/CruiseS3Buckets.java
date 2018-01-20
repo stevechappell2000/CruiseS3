@@ -42,7 +42,7 @@ public class CruiseS3Buckets {
         		secretKey = s.Parameter("secretKey");
         	}
         	String region = s.Parameter("region");
-        	System.out.println(accessKey+":"+secretKey+":"+region);
+        	System.out.println("Accessing region:"+region);
         	ret = new CruiseS3Bucket(accessKey, secretKey, region);
         	bucketCache.put(connName, ret);
         }

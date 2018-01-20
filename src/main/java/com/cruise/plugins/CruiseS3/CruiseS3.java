@@ -133,6 +133,14 @@ public class CruiseS3 implements PluginInterface
 			so.appendToResponse(service.Service()+"."+service.Action(),gro);
 			ret = true;
 			break;
+		case "plugininfo":
+			if(null != pmd) {
+				so.appendToResponse("PlugInInfo", pmd);
+				ret = true;
+			}else {
+				Clog.Error(so, "PlugInInfo", "600005", "Failed to get any information about the plugin.");
+			}
+			break;
 		case "info":
 			if(null != pmd) {
 				so.appendToResponse("PlugInInfo", pmd);
@@ -341,6 +349,11 @@ public class CruiseS3 implements PluginInterface
 		}
 		return ret;
 
+	}
+	@Override
+	public void byPass(SessionObject sessionObject) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
