@@ -1,11 +1,14 @@
 package com.cruise.plugins.CruiseS3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.Region;
+import com.corecruise.core.CoreCruise;
 import com.corecruise.cruise.SessionObject;
+import com.corecruise.cruise.config.CruisePluginEnvironment;
 import com.corecruise.cruise.logging.Clog;
 import com.corecruise.cruise.services.interfaces.PluginInterface;
 import com.corecruise.cruise.services.utils.Application;
@@ -14,6 +17,8 @@ import com.corecruise.cruise.services.utils.Services;
 import com.cruise.plugins.Action;
 import com.cruise.plugins.ActionParameter;
 import com.cruise.plugins.PlugInMetaData;
+import com.cruise.plugins.CruiseS3.utils.CruiseS3Bucket;
+import com.cruise.plugins.CruiseS3.utils.CruiseS3Buckets;
 
 
 public class CruiseS3 implements PluginInterface
@@ -21,9 +26,15 @@ public class CruiseS3 implements PluginInterface
 
 
 	PlugInMetaData pmd = null;
-	CruiseS3Config localConfig = new CruiseS3Config();
-    public CruiseS3() {
-    	pmd = new PlugInMetaData(localConfig, "CruiseS3","0.0.1","SJC","AWS S3 Storage");
+	CruisePluginEnvironment config = null;
+	String pluginName = "CruiseS3";
+	HashMap<String,String> cachedService = new HashMap<String,String>();
+	public CruiseS3() {
+		if(null == config)
+			config = CoreCruise.getCruiseConfig(pluginName);
+		
+    	pmd = new PlugInMetaData(pluginName,"0.0.1","SJC","AWS S3 Storage");
+    	
     	int x=0;
     	pmd.getActions().add(new Action("info", "getPlugin Information"));
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("service","true","~UUID","Internal Parameter to track service names. You can override"));
@@ -58,6 +69,12 @@ public class CruiseS3 implements PluginInterface
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("connectionName","true","MyAWSConnection","The connection must already have been created using this name."));
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("bucketName","true","MyAWSConnection","The valid bucketname for this connection.")); 
     	pmd.getActions().get(x).getActionParams().add(new ActionParameter("objectName","true","Yourbucket","This is the actual file/object name to retrieve."));    	
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("cache","false","false","When true, the S3 Object will be cached in local memory."));   
+
+    	++x;
+    	pmd.getActions().add(new Action("resetCache", "Lists all the files in the current bucket"));
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("service","true","~UUID","Internal Parameter to track service names. You can override"));
+
     	
     	++x;
     	pmd.getActions().add(new Action("s3ListAllFiles", "Lists all the files in the current bucket"));
@@ -159,7 +176,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3connect":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					gro.addParmeter("AWSConnection", "true");
 					so.appendToResponse(service.Service()+"."+service.Action(),gro);
@@ -172,7 +189,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3listbuckets":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					List<Bucket> myBuckets = bucket.listBuckets();
 					so.appendToResponse(service.Service()+"."+service.Action(),myBuckets);
@@ -185,7 +202,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3listallfiles":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					ObjectListing myBuckets = bucket.listAllObjects(service.Parameter("bucketName"));
 					so.appendToResponse(service.Service()+"."+service.Action(),myBuckets);
@@ -198,7 +215,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3listprefixfiles":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					ObjectListing myBuckets = bucket.listPrefixedObjects(service.Parameter("bucketName"),service.Parameter("prefix"));
 					so.appendToResponse(service.Service()+"."+service.Action(),myBuckets);
@@ -211,7 +228,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3putstring":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					if(bucket.putObjectString(service.Parameter("bucketName"),service.Parameter("objectName"),service.Parameter("object"))) {
 						gro.addParmeter("S3Put", "true");
@@ -229,7 +246,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3getstring":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					String s3String = bucket.getObjectString(service.Parameter("bucketName"),service.Parameter("objectName"));
 					if(null != s3String) {
@@ -251,7 +268,7 @@ public class CruiseS3 implements PluginInterface
 			break;
 		case "s3deleteobject":
             try {
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
+            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {
 					if(bucket.deleteObject(service.Parameter("bucketName"),service.Parameter("objectName"))){
 						gro.addParmeter("s3DeleteObject", "Object Removed");
@@ -285,32 +302,70 @@ public class CruiseS3 implements PluginInterface
 			 * 
 			 * 
 			 */
-            try {
-            	//get connection
-            	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd);
-				if(null != bucket) {
-					ArrayList<String> attachList = new ArrayList<String>();
-					String attach = service.Parameter("attach");
-					if(attach.contains(",")) {
-						String s[] = attach.split(",");
-						for(String sx:s) {
-							attachList.add(sx.trim());
-						}
-					}else {
-						attachList.add(attach.trim());
+			try {
+				String attach = service.Parameter("attach");
+				String cache = service.Parameter("cache");
+				if(null == cache) {
+					cache = "false";
+				}
+
+				ArrayList<String> attachList = new ArrayList<String>();
+
+				if(attach.contains(",")) {
+					String s[] = attach.split(",");
+					for(String sx:s) {
+						attachList.add(sx.trim());
 					}
-					boolean ok = false;
-					ArrayList<String> extParams = service.getExtraParameters(pmd);
-					if(null != extParams && extParams.size()>0) {
-						ok = true;
-					}
-					for(String objecName:attachList) {
-						ret = true;
-						try {
-							// get the JSON
-							String s3String = bucket.getObjectString(service.Parameter("bucketName"),objecName);
+				}else {
+					attachList.add(attach.trim());
+				}
+				boolean ok = false;
+				ArrayList<String> extParams = service.getExtraParameters(pmd);
+				if(null != extParams && extParams.size()>0) {
+					ok = true;
+				}
+				CruiseS3Bucket bucket = null;
+				String s3String = null;
+				boolean foundit = false;
+				for(String objecName:attachList) {
+					ret = true;
+					foundit = false;
+					if(cache.equalsIgnoreCase("true")) {
+						if(cachedService.containsKey(objecName)) {
+							foundit = true;
+							s3String = cachedService.get(objecName);
 							if(null != s3String) {
 								//Create the Application Object
+								Application a = so.getCruiseMapper().readValue("{\"Application\" : "+s3String+"}", Application.class);
+								int x = service.getServiceIndex();
+								// add Passthrough key value pairs
+								for(Services s:a.getServices()) {
+									++x;
+									if(ok) {
+										for(String ep:extParams) {
+											if(null != s.getServiceName() && ep.startsWith(s.getServiceName())) {
+												s.Parameter(ep.replace(s.getServiceName()+".", ""),service.Parameter(ep));
+											}
+										}
+									}
+									//add the news service to the list to be executed.
+									so.getApplication().getServices().add(x, s);
+								}
+							}else {
+								ret = false;
+							}
+						}
+					}
+					if(!foundit) {
+						try {
+							if(null == bucket) {
+								bucket = CruiseS3Buckets.getBucket(service, pmd, config);
+							}
+							s3String = bucket.getObjectString(service.Parameter("bucketName"),objecName);
+							if(null != s3String) {
+								if(cache.equalsIgnoreCase("true")) {
+									cachedService.put(objecName, s3String);
+								}
 								Application a = so.getCruiseMapper().readValue("{\"Application\" : "+s3String+"}", Application.class);
 								int x = service.getServiceIndex();
 								// add Passthrough key value pairs
@@ -330,15 +385,16 @@ public class CruiseS3 implements PluginInterface
 								Clog.Error(so, "PlugInInfo", "600015", "CruiseS3 Attach of script "+objecName+" was empty or not found.");
 								ret = false;
 							}
-							
+
 						}catch(Exception e) {
 							Clog.Error(so, "PlugInInfo", "600013", "CruiseS3 Attach of script "+objecName+" was empty or not found."+e.getMessage());
 							ret = false;
 						}
 					}
-					
-					///
+
 				}
+				///
+
 			} catch (Exception e) {
 				Clog.Error(so, "PlugInInfo", "600022", "Failed to connect:"+e.getMessage());
 				e.printStackTrace();
@@ -354,6 +410,11 @@ public class CruiseS3 implements PluginInterface
 	public void byPass(SessionObject sessionObject) {
 		// TODO Auto-generated method stub
 		
+	}
+	@Override
+	public boolean initPlugin() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

@@ -1,16 +1,15 @@
-package com.cruise.plugins.CruiseS3;
+package com.cruise.plugins.CruiseS3.utils;
 
-import java.io.Console;
 import java.util.HashMap;
 import java.util.Properties;
-
-import com.amazonaws.services.s3.model.Region;
+import com.corecruise.core.CoreCruise;
+import com.corecruise.cruise.config.CruisePluginEnvironment;
 import com.corecruise.cruise.services.utils.Services;
-import com.cruise.plugins.ActionParameter;
 import com.cruise.plugins.PlugInMetaData;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class CruiseS3Buckets {
+
 	private static HashMap<String, CruiseS3Bucket> bucketCache = null;
 	/*
     	pmd.getActions().get(3).getActionParams().add(new ActionParameter("ConnectionName","true","MyAWSConnection","This is the unique name that this connection is stored under"));
@@ -20,8 +19,11 @@ public class CruiseS3Buckets {
     	pmd.getActions().get(3).getActionParams().add(new ActionParameter("bucketName","true","Yourbucket","Name of the bucket to access")); 
 	 */
 	@JsonIgnore
-	public static CruiseS3Bucket getBucket(Services s, PlugInMetaData localConfig) throws Exception {
+	public static CruiseS3Bucket getBucket(Services s, PlugInMetaData localConfig,CruisePluginEnvironment config) throws Exception {
 		CruiseS3Bucket ret = null;
+		if(null == config) {
+			config = CoreCruise.getCruiseConfig("CruiseS3");
+		}
         if(null == bucketCache) {
         	bucketCache = new HashMap<String, CruiseS3Bucket>();
         }
@@ -31,13 +33,13 @@ public class CruiseS3Buckets {
         }else {
         	String accessKey = null;
         	if(null == s.Parameter("accessKey") || s.Parameter("accessKey").length()<1) {
-        		accessKey = localConfig.getConfiguration().getConfig().getProperty("accessKey");
+        		accessKey = config.getPluginProperties().getProperty("accessKey");
         	}else {
         		accessKey = s.Parameter("accessKey");
         	}
         	String secretKey = null;
         	if(null == s.Parameter("secretKey") || s.Parameter("secretKey").length()<1) {
-        		secretKey = localConfig.getConfiguration().getConfig().getProperty("secretKey");
+        		secretKey = config.getPluginProperties().getProperty("secretKey");
         	}else {
         		secretKey = s.Parameter("secretKey");
         	}
