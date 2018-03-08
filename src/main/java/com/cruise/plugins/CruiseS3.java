@@ -1,4 +1,4 @@
-package com.cruise.plugins.CruiseS3;
+package com.cruise.plugins;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,8 +17,8 @@ import com.corecruise.cruise.services.utils.Services;
 import com.cruise.plugins.Action;
 import com.cruise.plugins.ActionParameter;
 import com.cruise.plugins.PlugInMetaData;
-import com.cruise.plugins.CruiseS3.utils.CruiseS3Bucket;
-import com.cruise.plugins.CruiseS3.utils.CruiseS3Buckets;
+import com.cruise.plugins.utils.CruiseS3Bucket;
+import com.cruise.plugins.utils.CruiseS3Buckets;
 
 
 public class CruiseS3 implements PluginInterface

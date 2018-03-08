@@ -1,4 +1,4 @@
-package com.cruise.plugins.CruiseS3.utils;
+package com.cruise.plugins.utils;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -20,7 +20,9 @@ public class CruiseS3Buckets {
 	 */
 	@JsonIgnore
 	public static CruiseS3Bucket getBucket(Services s, PlugInMetaData localConfig,CruisePluginEnvironment config) throws Exception {
+		
 		CruiseS3Bucket ret = null;
+		try {
 		if(null == config) {
 			config = CoreCruise.getCruiseConfig("CruiseS3");
 		}
@@ -48,6 +50,10 @@ public class CruiseS3Buckets {
         	ret = new CruiseS3Bucket(accessKey, secretKey, region);
         	bucketCache.put(connName, ret);
         }
+		}catch(Exception e) {
+			e.printStackTrace();
+		    //throw e;
+		}
         return ret;
 	}
 	public Properties getConnectionList() {

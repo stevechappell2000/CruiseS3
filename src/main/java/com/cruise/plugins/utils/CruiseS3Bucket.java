@@ -1,12 +1,10 @@
-package com.cruise.plugins.CruiseS3.utils;
+package com.cruise.plugins.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
-
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -34,11 +32,15 @@ public class CruiseS3Bucket {
  * @param region
  */
 	public CruiseS3Bucket(String accessKey, String secretKey, String region) {
+		try {
 		AccessKey = accessKey;
 		SecretKey = secretKey;
 		creds = createCredentials(accessKey, secretKey);
 		if(null != creds) {
 			s3client = createClient(creds, region);
+		}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 
 	}
@@ -81,6 +83,7 @@ public class CruiseS3Bucket {
 			e.printStackTrace();
 		}
 		return ret;
+
 	}
 	/**
 	 * Creates a new bucket
