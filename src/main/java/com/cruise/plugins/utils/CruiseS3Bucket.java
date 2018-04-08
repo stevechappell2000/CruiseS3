@@ -78,6 +78,9 @@ public class CruiseS3Bucket {
 			if(null == region) {
 				region = Regions.US_WEST_2.toString();
 			}
+
+			
+			
 			if(null == endPoint) {
 				ret = AmazonS3ClientBuilder
 						.standard()
@@ -90,7 +93,9 @@ public class CruiseS3Bucket {
 						.withCredentials(new AWSStaticCredentialsProvider(credentials))
 						.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint,region))
 						.build();
-			}
+			}			
+			
+			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
