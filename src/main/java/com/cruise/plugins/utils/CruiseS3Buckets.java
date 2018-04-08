@@ -45,9 +45,15 @@ public class CruiseS3Buckets {
         	}else {
         		secretKey = s.Parameter("secretKey");
         	}
+        	String endPoint = null;
+        	if(null == s.Parameter("endPoint") || s.Parameter("endPoint").length()<1) {
+        		endPoint = config.getPluginProperties().getProperty("endPoint");
+        	}else {
+        		endPoint = s.Parameter("endPoint");
+        	}
         	String region = s.Parameter("region");
         	System.out.println("Accessing region:"+region);
-        	ret = new CruiseS3Bucket(accessKey, secretKey, region);
+        	ret = new CruiseS3Bucket(accessKey, secretKey, region, endPoint);
         	bucketCache.put(connName, ret);
         }
 		}catch(Exception e) {

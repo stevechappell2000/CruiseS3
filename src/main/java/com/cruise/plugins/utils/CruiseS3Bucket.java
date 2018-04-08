@@ -8,6 +8,7 @@ import java.util.List;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -31,13 +32,16 @@ public class CruiseS3Bucket {
  * @param secretKey
  * @param region
  */
-	public CruiseS3Bucket(String accessKey, String secretKey, String region) {
+	public CruiseS3Bucket(String accessKey, String secretKey, String region, String endPoint) {
 		try {
 		AccessKey = accessKey;
 		SecretKey = secretKey;
 		creds = createCredentials(accessKey, secretKey);
+		if(true==false) {
+			//creds.setEndpoint("http");
+		}
 		if(null != creds) {
-			s3client = createClient(creds, region);
+			s3client = createClient(creds, region, endPoint);
 		}
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -68,20 +72,29 @@ public class CruiseS3Bucket {
 	 * @param region
 	 * @return
 	 */
-	private AmazonS3 createClient(AWSCredentials credentials, String region) {
+	private AmazonS3 createClient(AWSCredentials credentials, String region, String endPoint) {
 		AmazonS3 ret = null;
 		try {
 			if(null == region) {
 				region = Regions.US_WEST_2.toString();
 			}
-			ret = AmazonS3ClientBuilder
-					.standard()
-					.withCredentials(new AWSStaticCredentialsProvider(credentials))
-					.withRegion(region)
-					.build();
+			if(null == endPoint) {
+				ret = AmazonS3ClientBuilder
+						.standard()
+						.withCredentials(new AWSStaticCredentialsProvider(credentials))
+						.withRegion(region)
+						.build();
+			}else {
+				ret = AmazonS3ClientBuilder
+						.standard()
+						.withCredentials(new AWSStaticCredentialsProvider(credentials))
+						.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint,region))
+						.build();
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+
 		return ret;
 
 	}
