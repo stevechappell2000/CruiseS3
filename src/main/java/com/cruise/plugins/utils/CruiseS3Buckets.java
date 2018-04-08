@@ -53,6 +53,7 @@ public class CruiseS3Buckets {
         	}
         	String region = s.Parameter("region");
         	System.out.println("Accessing region:"+region);
+        	//added Endpoint
         	ret = new CruiseS3Bucket(accessKey, secretKey, region, endPoint);
         	bucketCache.put(connName, ret);
         }

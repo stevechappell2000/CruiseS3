@@ -175,6 +175,7 @@ public class CruiseS3 implements PluginInterface
 			}
 			break;
 		case "s3connect":
+			//added endpoint
             try {
             	CruiseS3Bucket bucket = CruiseS3Buckets.getBucket(service, pmd, config);
 				if(null != bucket) {

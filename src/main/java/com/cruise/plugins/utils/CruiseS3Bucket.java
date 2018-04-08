@@ -73,7 +73,7 @@ public class CruiseS3Bucket {
 	 * @return
 	 */
 	private AmazonS3 createClient(AWSCredentials credentials, String region, String endPoint) {
-		AmazonS3 ret = null;
+		AmazonS3 ret = null;//Sample
 		try {
 			if(null == region) {
 				region = Regions.US_WEST_2.toString();
